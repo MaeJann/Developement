@@ -76,10 +76,14 @@ XPL_std = comp_std(max_xpl, x_min,x_max, y_min, y_max)
 #PPL_textures = ext_text(max_ppl, x_min,x_max, y_min, y_max, 2)
 #PPL_textures = normalize(PPL_textures)
 
-
+Feature_Names = ["PPL-H", "PPL-I", "PPL-V", "XPL-H", "XPL-I", "XPL-V", "PPL-H-STD", "PPL-I-STD", "PPL-V-STD", "XPL-H-STD", "XPL-I-STD", "XPL-V-STD" ]
 #%% Combine extracted features to feature matrix
 
 X = np.hstack((PPL_Color, XPL_Color, PPL_std, XPL_std))
+
+Features = pd.DataFrame(X)
+Features.to_csv('Featurematrix.csv', sep = ';', header = Feature_Names)
+
 
 #%% Quick Feature Test
 
@@ -88,6 +92,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.linear_model import LogisticRegression
 from sklearn.cross_validation import train_test_split
+
+
 
 X_train, X_test, y_train, y_test = train_test_split(X ,labels, test_size=0.4, random_state = 1) 
 
