@@ -16,11 +16,14 @@ x,y = data[:, 1], data[:, 2]
 labels = data[:,3]
 
 # --- define quadratic slide around coordinates 
-extend = 10
+extend = 34
 x_min = x - extend 
 x_max = x + extend
 y_min = y - extend
 y_max = y + extend
+
+print(np.min(x_min), np.min(x_max), np.min(y_min), np.min(y_max))
+
 
 # --- Load maximum intensity images:
 max_ppl = cv2.imread('C:/Users/j-mae/Desktop/Master Thesis/Image Data/Test Data/Merged Data/Naxos_Boudin_8/Images/Processed/PPL_RGB.jpg')
@@ -79,41 +82,10 @@ XPL_std = comp_std(max_xpl, x_min,x_max, y_min, y_max)
 Feature_Names = ["PPL-H", "PPL-I", "PPL-V", "XPL-H", "XPL-I", "XPL-V", "PPL-H-STD", "PPL-I-STD", "PPL-V-STD", "XPL-H-STD", "XPL-I-STD", "XPL-V-STD" ]
 #%% Combine extracted features to feature matrix
 
-X = np.hstack((PPL_Color, XPL_Color, PPL_std, XPL_std))
-
-Features = pd.DataFrame(X)
+Features = np.hstack((PPL_Color, XPL_Color, PPL_std, XPL_std))
+Features = pd.DataFrame(Features)
 Features.to_csv('Featurematrix.csv', sep = ';', header = Feature_Names)
 
-
-#%% Quick Feature Test
-
-from sklearn import metrics
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn import svm
-from sklearn.linear_model import LogisticRegression
-from sklearn.cross_validation import train_test_split
-
-
-
-X_train, X_test, y_train, y_test = train_test_split(X ,labels, test_size=0.4, random_state = 1) 
-
-knn3 = KNeighborsClassifier(n_neighbors = 3)
-knn3.fit(X_train, y_train)
-y_pred = knn3.predict(X_test)
-print()
-print()
-print("Classification Accuracy KNN: (K = 3):", metrics.accuracy_score(y_test, y_pred))
-
-logreg = LogisticRegression()
-logreg.fit(X_train,y_train)
-y_pred = logreg.predict(X_test)
-print("Classification Accuracy Logistic Regression:", metrics.accuracy_score(y_test, y_pred))
-
-
-supvecm= svm.SVC(kernel='poly', degree=3)
-supvecm.fit(X_train,y_train)
-y_pred = supvecm.predict(X_test)
-print("Classification Supported Vector Machines:", metrics.accuracy_score(y_test, y_pred))
 
 #%% Displaying windows 
 
