@@ -1,9 +1,11 @@
 import pandas as pd
+import numpy as np
 from sklearn import metrics
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.linear_model import LogisticRegression
 from sklearn.cross_validation import train_test_split
+from sklearn.cross_validation import cross_val_score
 
 
 #%% Loading the data
@@ -17,23 +19,17 @@ Features = Features.as_matrix()
 X = Features[:, 1:]
 
 
-
-X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.4, random_state = 1) 
-
+#%%
 knn3 = KNeighborsClassifier(n_neighbors = 3)
-knn3.fit(X_train, y_train)
-y_pred = knn3.predict(X_test)
-print()
-print()
-print("Classification Accuracy KNN: (K = 3):", metrics.accuracy_score(y_test, y_pred))
+scores_knn3 = cross_val_score(knn3, X, labels, cv = 10, scoring = 'accuracy')
+print("Classification Accuracy KNN: (K = 3):", np.mean(scores_knn3))
 
+#%%
 logreg = LogisticRegression(penalty='l1')  #l1 regularization approach appears to give better results.
-logreg.fit(X_train,y_train)
-y_pred = logreg.predict(X_test)
-print("Classification Accuracy Logistic Regression:", metrics.accuracy_score(y_test, y_pred))
+scores_logreg = cross_val_score(logreg, X, labels, cv = 10, scoring = 'accuracy')
+print("Classification Accuracy Logistic Regression:", np.mean(scores_logreg))
 
-
+#%%
 supvecm= svm.SVC(kernel='poly', degree=3)
-supvecm.fit(X_train,y_train)
-y_pred = supvecm.predict(X_test)
-print("Classification Supported Vector Machines:", metrics.accuracy_score(y_test, y_pred))
+scores_supvecm = cross_val_score(supvecm, X, labels, cv = 10, scoring = 'accuracy')
+print("Classification Supported Vector Machines:", np.mean(scores_supvecm))
