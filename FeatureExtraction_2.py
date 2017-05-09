@@ -8,6 +8,15 @@ import pandas as pd
 
 #%% Load Data
 
+# --- Load maximum intensity images:
+max_ppl = cv2.imread('C:/Users/j-mae/Desktop/Master Thesis/Image Data/Test Data/Merged Data/Naxos_Boudin_8/Images/Processed/PPL_RGB.jpg')
+max_ppl = cv2.cvtColor(max_ppl, cv2.COLOR_BGR2HSV) # transform image to HSV color space
+
+max_xpl = cv2.imread('C:/Users/j-mae/Desktop/Master Thesis/Image Data/Test Data/Merged Data/Naxos_Boudin_8/Images/Processed/MaxInt_XPL_RGB.jpg')
+max_xpl = cv2.cvtColor(max_xpl, cv2.COLOR_BGR2HSV) # transform image to HSV color space
+
+                      
+                      
 
 # --- Load coordinates and labels 
 data = pd.DataFrame(pd.read_csv('C:/Users/j-mae/Desktop/Master Thesis/Image Data/Test Data/Merged Data/Naxos_Boudin_8/Extracted/All_Minerals.csv', header=None, sep = ';' ))  
@@ -15,22 +24,21 @@ data = data.as_matrix()
 x,y = data[:, 1], data[:, 2]
 labels = data[:,3]
 
-# --- define quadratic slide around coordinates 
-extend = 34
+# --- Define quadratic slide around coordinates. If slice would cross image edge, value for slide edge set to image edge.
+extend = 100
+
 x_min = x - extend 
+x_min[x_min < 0] = 0
+
 x_max = x + extend
+x_max[x_max > max_ppl.shape[1]] = max_ppl.shape[1]
+     
 y_min = y - extend
+x_min[y_min< 0] = 0
+     
 y_max = y + extend
+y_max[y_max > max_ppl.shape[0]] = max_ppl.shape[0]
 
-print(np.min(x_min), np.min(x_max), np.min(y_min), np.min(y_max))
-
-
-# --- Load maximum intensity images:
-max_ppl = cv2.imread('C:/Users/j-mae/Desktop/Master Thesis/Image Data/Test Data/Merged Data/Naxos_Boudin_8/Images/Processed/PPL_RGB.jpg')
-max_ppl = cv2.cvtColor(max_ppl, cv2.COLOR_BGR2HSV) # transform image to HSV color space
-
-max_xpl = cv2.imread('C:/Users/j-mae/Desktop/Master Thesis/Image Data/Test Data/Merged Data/Naxos_Boudin_8/Images/Processed/MaxInt_XPL_RGB.jpg')
-max_xpl = cv2.cvtColor(max_xpl, cv2.COLOR_BGR2HSV) # transform image to HSV color space
 
 #%% Functions for feature extraction
 
