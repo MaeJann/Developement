@@ -25,7 +25,7 @@ x,y = data[:, 1], data[:, 2]
 labels = data[:,3]
 
 # --- Define quadratic slide around coordinates. If slice would cross image edge, value for slide edge set to image edge.
-extend = 100
+extend = 10
 
 x_min = x - extend 
 x_min[x_min < 0] = 0
@@ -54,7 +54,6 @@ def comp_std(image, x_min,x_max, y_min, y_max):
     for i in range(len(x_min)):
         std_vals[i, 0:3] = np.array([np.std(image[y_min[i]:y_max[i], x_min[i]:x_max[i],0]), np.std(image[y_min[i]:y_max[i], x_min[i]:x_max[i], 1]), np.std(image[y_min[i]:y_max[i], x_min[i]:x_max[i], 2])])
     return std_vals
-
 
 
 def ext_text(image, x_min,x_max, y_min, y_max, channel):
@@ -97,7 +96,8 @@ Features.to_csv('Featurematrix.csv', sep = ';', header = Feature_Names)
 
 #%% Displaying windows 
 
-#import matplotlib.pyplot as plt
-#i = 1
-#test = max_xpl[y_min[i]:y_max[i], x_min[i]:x_max[i],2]
-#plt.imshow(test, cmap = "gray")
+import matplotlib.pyplot as plt
+i = 60
+
+test = max_xpl[y_min[i]:y_max[i], x_min[i]:x_max[i],2]
+plt.imshow(test, cmap = "gray")
