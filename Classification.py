@@ -9,8 +9,8 @@ from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import scale
 import itertools
-import plotly.plotly as py
-import plotly.graph_objs as go
+
+from collections import Counter
 
 #%% Function for plotting confusion matrix: Code to plot conf. matrix partly modified after http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
 
@@ -39,8 +39,8 @@ def plt_conf(cm, classnames, title, norm = "False"):
     print(cm)
 
 def plot_hist(data1, data2):
-    plt.hist(amph_prob)
-    plt.hist(not_amph_prob)
+    plt.hist(data1)
+    plt.hist(data2)
     plt.xlim(0,1)
     plt.title("Probability Histogram")
     plt.xlabel("Probability")
@@ -90,11 +90,65 @@ cm_svm = confusion_matrix(labels, y_train_pred_svm)
 
 
 #%%
+
+def purity_map(predictions):
+# Plotting Clustering results ("Purity Map")
+
+    predictions = predictions.reshape((50,42))
+    plt.imshow(predictions)
+    plt.imshow(predictions)
+    plt.colorbar()
+    figure = plt.gca()
+    figure.axes.get_xaxis().set_visible(False)
+    figure.axes.get_yaxis().set_visible(False)
+
+
+def purity_metric(predictions, labels, n_cluster):
+    class_corr = []
+    
+    for i in range(n_cluster):
+    # create array wich contains all label instances in a certain cluster:
+        positions = predictions == i
+        label_instances = labels[positions]
+        
+        # compute max value
+        maxx,minn = max(label_instances),min(label_instances)
+        c = Counter(label_instances)
+        frequency = [c[i] for i in range(minn,maxx+1)]
+        max_frequency = np.max(frequency)
+
+        class_corr.append(max_frequency)
+        
+    purity = np.sum(class_corr)/len(labels)
+    n_missed =  len(labels) - np.sum(class_corr)
+    return purity, n_missed
+
+
+#%%        
+
 from sklearn.cluster import KMeans
+from sklearn.mixture import GaussianMixture
 
-X = X[:800,]
 
-clf_kmeans = KMeans(n_clusters = 2)
-clf_kmeans.fit(X)
+# Create GMM Classifier
+clf_GMM = GaussianMixture(n_components = 6)
+clf_GMM.fit(X)
+GMM_results = clf_GMM.predict(X)
 
-y_means_predicted = clf_kmeans.predict(X)
+GMM_purity, GMM_missed = purity_metric(GMM_results, labels,6 )
+print(GMM_purity)
+print(GMM_missed)
+purity_map(GMM_results)
+
+clf_KM = KMeans(n_clusters = 6)
+clf_KM.fit(X)
+KM_results = clf_KM.predict(X)
+
+KM_purity, KM_missed = purity_metric(KM_results, labels,6 )
+print(KM_purity)
+print(KM_missed)
+
+
+
+#%%
+
