@@ -7,8 +7,10 @@ from sklearn.cross_validation import cross_val_score
 from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
-
+from sklearn.preprocessing import scale
 import itertools
+import plotly.plotly as py
+import plotly.graph_objs as go
 
 #%% Function for plotting confusion matrix: Code to plot conf. matrix partly modified after http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
 
@@ -35,7 +37,16 @@ def plt_conf(cm, classnames, title, norm = "False"):
     plt.xlabel('Predicted Label')
     plt.ylabel('True Label')
     print(cm)
-    
+
+def plot_hist(data1, data2):
+    plt.hist(amph_prob)
+    plt.hist(not_amph_prob)
+    plt.xlim(0,1)
+    plt.title("Probability Histogram")
+    plt.xlabel("Probability")
+    plt.ylabel("Counts")
+    thresh = 0.5
+    plt.axvline(x=thresh, color='k', linestyle='dotted', linewidth=1.5)
 #%%
     
 data = pd.DataFrame(pd.read_csv('C:/Users/j-mae/Desktop/Master Thesis/Image Data/Test Data/Merged Data/Naxos_Boudin_8/Extracted/All_Minerals.csv', header=None, sep = ';' ))  
@@ -46,6 +57,8 @@ label_names = ['Cal','Fsp','Bt','Amp','Op']
 Features = pd.DataFrame(pd.read_csv('C:/Users/j-mae/Desktop/Master Thesis/Image Data/Test Data/Merged Data/Naxos_Boudin_8/Extracted/Featurematrix.csv', sep = ';' ))
 Features = Features.as_matrix()
 X = Features[:, 1:]
+
+X = scale(X)  # way to scale features... did not improved results so far
  #%%
 
 knn = KNeighborsClassifier(n_neighbors = 3)
@@ -61,6 +74,11 @@ print("Logistic Regression accuracy:", np.mean(logreg_score))
 y_train_pred_log = cross_val_predict(logreg, X, labels, cv=10)
 cm_log = confusion_matrix(labels, y_train_pred_log) 
 
+logreg.fit(X, labels)
+log_reg_prob = logreg.predict_proba(X) # get propabilities in case of logistic regression!
+
+
+
 #%%  
 supvecm= svm.SVC(kernel='poly', degree=3)
 svm_score = cross_val_score(supvecm, X, labels, cv = 10, scoring = 'accuracy')
@@ -68,6 +86,15 @@ print("SVM Accuracy:", np.mean(svm_score))
 y_train_pred_svm = cross_val_predict(supvecm, X, labels, cv=10)
 cm_svm = confusion_matrix(labels, y_train_pred_svm) 
 
-plt_conf(cm_svm, label_names, "Confusion Matrix for SVM")
+#plt_conf(cm_svm, label_names, "Confusion Matrix for SVM")
 
 
+#%%
+from sklearn.cluster import KMeans
+
+X = X[:800,]
+
+clf_kmeans = KMeans(n_clusters = 2)
+clf_kmeans.fit(X)
+
+y_means_predicted = clf_kmeans.predict(X)
