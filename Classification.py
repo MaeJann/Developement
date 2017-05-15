@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import scale
 import itertools
 
+from sklearn.grid_search import GridSearchCV
+
 
 #%% Function for plotting confusion matrix: Code to plot conf. matrix partly modified after http://scikit-learn.org/stable/auto_examples/model_selection/plot_confusion_matrix.html
 
@@ -58,32 +60,72 @@ Features = Features.as_matrix()
 X = Features[:, 1:]
 
 #X = scale(X)  # way to scale features... did not improved results so far
- #%%
+ #%% Parameter tuning and testing for KNN
 
-knn = KNeighborsClassifier(n_neighbors = 3)
-knn_score = cross_val_score(knn, X, labels, cv = 10, scoring = 'accuracy')
-print("kNN accuracy:", np.mean(knn_score))
-y_train_pred_knn = cross_val_predict(knn, X, labels, cv=10)
-cm_knn = confusion_matrix(labels, y_train_pred_knn) 
+
+knn = KNeighborsClassifier() # Instantiate t classifier with default parameter                                   
+knn_param_grid = dict(n_neighbors = np.arange(1, 30), weights = ('uniform', 'distance'), p = (1,2), algorithm = ('auto', 'ball_tree', 'kd_tree', 'brute')) # Define parameter grid where all parameter ranges/options to test are specified
+knn_grid = GridSearchCV(knn, knn_param_grid, cv=10, scoring='accuracy') # Instantiate a grid object for the classifier, specifiy folds and performance measure
+knn_grid.fit(X, labels) #fit model grid with data
+
+#Plotting accuracy vs. k          
+#knn_mean_scores = [result.mean_validation_score for result in knn_grid.grid_scores_]
+#plt.plot( np.arange(1, 100), knn_mean_scores)
+#plt.show()
+
+
+
+# Print Results:
+print('Best score           :', knn_grid.best_score_)
+print('Best parameters found:', knn_grid.best_params_)
+print(knn_grid.best_estimator_)
+
+
  
 #%%   
-logreg = LogisticRegression(penalty='l1')  #l1 regularization approach appears to give better results.
-logreg_score = cross_val_score(logreg, X, labels, cv = 10, scoring = 'accuracy')
-print("Logistic Regression accuracy:", np.mean(logreg_score))
-y_train_pred_log = cross_val_predict(logreg, X, labels, cv=10)
-cm_log = confusion_matrix(labels, y_train_pred_log) 
 
-logreg.fit(X, labels)
-log_reg_prob = logreg.predict_proba(X) # get propabilities in case of logistic regression!
+logreg = LogisticRegression()                                
+logreg_param_grid = dict(penalty = ('l1','l2'), C = np.arange(0.1, 10, 0.1)) 
+logreg_grid = GridSearchCV(logreg, logreg_param_grid, cv=10, scoring='accuracy') 
+logreg_grid.fit(X, labels)                    
+   
+print('Best score           :', logreg_grid.best_score_)
+print('Best parameters found:', logreg_grid.best_params_)
+print(logreg_grid.best_estimator_)                        
+                           
+      
+      
+#logreg_score = cross_val_score(logreg, X, labels, cv = 10, scoring = 'accuracy')
+#print("Logistic Regression accuracy:", np.mean(logreg_score))
+#y_train_pred_log = cross_val_predict(logreg, X, labels, cv=10, n_jobs = -1)
+#cm_log = confusion_matrix(labels, y_train_pred_log) 
+#
+#logreg.fit(X, labels)
+#log_reg_prob = logreg.predict_proba(X) # get propabilities in case of logistic regression!
 
 
 
 #%%  
-supvecm= svm.SVC(kernel='poly', degree=3)
+
+
+#supvm = svm.SVC() #l1 regularization approach appears to give better results.                                
+#supvm_param_grid = dict(kernel = ('linear','poly', 'rbf'), degree = np.arange(1,11), C = np.arange(0.1, 10, 0.1)) # Define parameter grid where all parameter ranges/options to test are specified
+#supvm_grid = GridSearchCV(supvm, supvm_param_grid, cv=10, scoring='accuracy') # Instantiate a grid object for the classifier, specifiy folds and performance measure
+#supvm_grid.fit(X, labels) #fit model grid with data                        
+#   
+#print('Best score           :', supvm_grid.best_score_)
+#print('Best parameters found:', supvm_grid.best_params_)
+#print(supvm_grid.best_estimator_)   
+
+
+
+supvecm= svm.SVC(kernel='poly', degree=2)
 svm_score = cross_val_score(supvecm, X, labels, cv = 10, scoring = 'accuracy')
 print("SVM Accuracy:", np.mean(svm_score))
 y_train_pred_svm = cross_val_predict(supvecm, X, labels, cv=10)
 cm_svm = confusion_matrix(labels, y_train_pred_svm) 
 
 plt_conf(cm_svm, label_names, "Confusion Matrix for SVM")
+
+#%%
 
