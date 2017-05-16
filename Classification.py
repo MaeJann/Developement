@@ -7,7 +7,7 @@ from sklearn.cross_validation import cross_val_score
 from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import scale
+from sklearn.preprocessing import minmax_scale
 import itertools
 
 from sklearn.grid_search import GridSearchCV
@@ -58,13 +58,13 @@ label_names = ['Cal','Fsp','Bt','Amp','Op']
 Features = pd.DataFrame(pd.read_csv('C:/Users/j-mae/Desktop/Master Thesis/Image Data/Test Data/Merged Data/Naxos_Boudin_8/Extracted/Featurematrix.csv', sep = ';' ))
 Features = Features.as_matrix()
 X = Features[:, 1:]
-
+#X = minmax_scale(X)
 #X = scale(X)  # way to scale features... did not improved results so far
  #%% Parameter tuning and testing for KNN
 
 
 knn = KNeighborsClassifier() # Instantiate t classifier with default parameter                                   
-knn_param_grid = dict(n_neighbors = np.arange(1, 30), weights = ('uniform', 'distance'), p = (1,2), algorithm = ('auto', 'ball_tree', 'kd_tree', 'brute')) # Define parameter grid where all parameter ranges/options to test are specified
+knn_param_grid = dict(n_neighbors = np.arange(1, 5), weights = ('uniform', 'distance'), p = (1,2), algorithm = ('auto', 'ball_tree', 'kd_tree', 'brute')) # Define parameter grid where all parameter ranges/options to test are specified
 knn_grid = GridSearchCV(knn, knn_param_grid, cv=10, scoring='accuracy') # Instantiate a grid object for the classifier, specifiy folds and performance measure
 knn_grid.fit(X, labels) #fit model grid with data
 
@@ -85,23 +85,23 @@ print(knn_grid.best_estimator_)
 #%%   
 
 logreg = LogisticRegression()                                
-logreg_param_grid = dict(penalty = ('l1','l2'), C = np.arange(0.1, 10, 0.1)) 
-logreg_grid = GridSearchCV(logreg, logreg_param_grid, cv=10, scoring='accuracy') 
-logreg_grid.fit(X, labels)                    
-   
-print('Best score           :', logreg_grid.best_score_)
-print('Best parameters found:', logreg_grid.best_params_)
-print(logreg_grid.best_estimator_)                        
+#logreg_param_grid = dict(penalty = ('l1','l2'), C = np.arange(0.1, 10, 0.1)) 
+#logreg_grid = GridSearchCV(logreg, logreg_param_grid, cv=10, scoring='accuracy') 
+#logreg_grid.fit(X, labels)                    
+#   
+#print('Best score           :', logreg_grid.best_score_)
+#print('Best parameters found:', logreg_grid.best_params_)
+#print(logreg_grid.best_estimator_)                        
                            
       
       
-#logreg_score = cross_val_score(logreg, X, labels, cv = 10, scoring = 'accuracy')
-#print("Logistic Regression accuracy:", np.mean(logreg_score))
-#y_train_pred_log = cross_val_predict(logreg, X, labels, cv=10, n_jobs = -1)
-#cm_log = confusion_matrix(labels, y_train_pred_log) 
-#
-#logreg.fit(X, labels)
-#log_reg_prob = logreg.predict_proba(X) # get propabilities in case of logistic regression!
+logreg_score = cross_val_score(logreg, X, labels, cv = 10, scoring = 'accuracy')
+print("Logistic Regression accuracy:", np.mean(logreg_score))
+y_train_pred_log = cross_val_predict(logreg, X, labels, cv=10, n_jobs = -1)
+cm_log = confusion_matrix(labels, y_train_pred_log) 
+
+logreg.fit(X, labels)
+log_reg_prob = logreg.predict_proba(X) # get propabilities in case of logistic regression!
 
 
 
